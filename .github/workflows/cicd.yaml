@@ -16,6 +16,10 @@ jobs:
         go-version: 1.23
     - name: Run tests
       run: cd backend && go test 
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+    - name: Run govulncheck
+      run: govulncheck ./...
 
   build-and-push:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -23,6 +27,25 @@ jobs:
     needs: test
     steps:
     - uses: actions/checkout@v4
+    - name: Build Docker image
+      run: docker build -t soundaryanarayana6/octabyte-assignment:latest .
+
+    - name: Run Trivy scanner
+      uses: aquasecurity/trivy-action@0.17.0
+      with:
+        scan-type: 'image'
+        image-ref: 'soundaryanarayana6/octabyte-assignment:latest'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'OS,config,secret'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan report
+      uses: actions/upload-artifact@v3
+      with:
+        name: trivy-results
+        path: trivy-results.json
+        
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
@@ -34,3 +57,4 @@ jobs:
         context: backend
         push: true
         tags: soundaryanarayana6/octabyte-assignment:latest
+
