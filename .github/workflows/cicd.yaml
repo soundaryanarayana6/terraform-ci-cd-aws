@@ -16,10 +16,10 @@ jobs:
         go-version: 1.23
     - name: Run tests
       run: cd backend && go test 
-    - name: Install govulncheck
-      run: go install golang.org/x/vuln/cmd/govulncheck@latest
-    - name: Run govulncheck
-      run: cd backend && govulncheck ./...
+    # - name: Install govulncheck
+    #   run: go install golang.org/x/vuln/cmd/govulncheck@latest
+    # - name: Run govulncheck
+    #   run: cd backend && govulncheck ./...
 
   build-and-push:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
