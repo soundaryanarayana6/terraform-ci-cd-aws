@@ -169,22 +169,37 @@ resource "aws_cloudwatch_dashboard" "application" {
 
   dashboard_body = jsonencode({
     widgets = [
-      # Request Rate
       {
         type   = "metric"
         x      = 0
         y      = 0
-        width  = 12
+        width  = 6
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "Total Requests" }],
-            [".", "RequestCount", ".", ".", { stat = "Rate", label = "Request Rate (req/sec)" }]
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "Total Requests" }]
           ]
           period = 300
           stat   = "Sum"
           region = var.aws_region
-          title  = "Application Request Rate"
+          title  = "Request Count"
+        }
+      },
+      # Request Rate
+      {
+        type   = "metric"
+        x      = 6
+        y      = 0
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Rate", label = "Request Rate (req/sec)" }]
+          ]
+          period = 300
+          stat   = "Average"
+          region = var.aws_region
+          title  = "Request Rate (req/sec)"
         }
       },
       # Target Error Rates
