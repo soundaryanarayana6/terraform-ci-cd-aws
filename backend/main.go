@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	// Set log output to stdout explicitly for CloudWatch
+
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Starting application...")
