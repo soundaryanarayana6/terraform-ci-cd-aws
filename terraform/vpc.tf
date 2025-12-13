@@ -49,7 +49,6 @@ resource "aws_subnet" "private" {
   }
 }
 
-# NAT Gateway (One for high availability/cost balance, usually per AZ for prod)
 
 
 # Route Tables
