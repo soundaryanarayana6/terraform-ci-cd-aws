@@ -49,7 +49,8 @@ resource "aws_ecs_task_definition" "app" {
       { name = "DB_USERNAME", value = var.db_username },
       # DB_PASSWORD injected at runtime or fetched from Secrets Manager (if fully implemented). 
       # Since we removed Secrets Manager code from App:
-      { name = "DB_PASSWORD", value = var.db_password } 
+      { name = "DB_PASSWORD", value = var.db_password },
+      { name = "GIN_MODE", value = "debug" }
     ]
     logConfiguration = {
       logDriver = "awslogs"
