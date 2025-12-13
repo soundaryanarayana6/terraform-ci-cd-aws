@@ -43,8 +43,7 @@ resource "aws_cloudwatch_dashboard" "infrastructure" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ECS", "CPUUtilization", "ClusterName", aws_ecs_cluster.main.name, "ServiceName", aws_ecs_service.app.name, { stat = "Average" }],
-            ["AWS/ECS", "CPUUtilization", "ClusterName", aws_ecs_cluster.main.name, "ServiceName", aws_ecs_service.app.name, { stat = "Maximum" }]
+            ["AWS/ECS", "CPUUtilization", "ClusterName", aws_ecs_cluster.main.name]
           ]
           period = 300
           stat   = "Average"
@@ -67,8 +66,7 @@ resource "aws_cloudwatch_dashboard" "infrastructure" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ECS", "MemoryUtilization", "ClusterName", aws_ecs_cluster.main.name, "ServiceName", aws_ecs_service.app.name, { stat = "Average" }],
-            ["AWS/ECS", "MemoryUtilization", "ClusterName", aws_ecs_cluster.main.name, "ServiceName", aws_ecs_service.app.name, { stat = "Maximum" }]
+            ["AWS/ECS", "MemoryUtilization", "ClusterName", aws_ecs_cluster.main.name]
           ]
           period = 300
           stat   = "Average"
@@ -91,8 +89,7 @@ resource "aws_cloudwatch_dashboard" "infrastructure" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Average" }],
-            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Maximum" }]
+            ["AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", aws_db_instance.postgres.identifier]
           ]
           period = 300
           stat   = "Average"
@@ -115,8 +112,8 @@ resource "aws_cloudwatch_dashboard" "infrastructure" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Average", label = "Freeable Memory" }],
-            ["AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Average", label = "Free Storage" }]
+            ["AWS/RDS", "FreeableMemory", "DBInstanceIdentifier", aws_db_instance.postgres.identifier],
+            ["AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", aws_db_instance.postgres.identifier]
           ]
           period = 300
           stat   = "Average"
@@ -133,8 +130,8 @@ resource "aws_cloudwatch_dashboard" "infrastructure" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Sum", label = "Read IOPS" }],
-            ["AWS/RDS", "WriteIOPS", "DBInstanceIdentifier", aws_db_instance.postgres.identifier, { stat = "Sum", label = "Write IOPS" }]
+            ["AWS/RDS", "ReadIOPS", "DBInstanceIdentifier", aws_db_instance.postgres.identifier],
+            ["AWS/RDS", "WriteIOPS", "DBInstanceIdentifier", aws_db_instance.postgres.identifier]
           ]
           period = 300
           stat   = "Sum"
@@ -177,7 +174,7 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "Total Requests" }]
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Sum"
@@ -194,7 +191,7 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Rate", label = "Request Rate (req/sec)" }]
+            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Average"
@@ -211,8 +208,8 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "4XX Errors" }],
-            ["...", "HTTPCode_Target_5XX_Count", ".", ".", { stat = "Sum", label = "5XX Errors" }]
+            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix],
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Sum"
@@ -229,8 +226,8 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "HTTPCode_ELB_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "ALB 4XX" }],
-            ["...", "HTTPCode_ELB_5XX_Count", ".", ".", { stat = "Sum", label = "ALB 5XX" }]
+            ["AWS/ApplicationELB", "HTTPCode_ELB_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix],
+            ["AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Sum"
@@ -247,10 +244,7 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Average", label = "Avg Response Time" }],
-            ["...", ".", ".", ".", { stat = "p50", label = "p50" }],
-            ["...", ".", ".", ".", { stat = "p95", label = "p95" }],
-            ["...", ".", ".", ".", { stat = "p99", label = "p99" }]
+            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Average"
@@ -267,8 +261,8 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "HealthyHostCount", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Average", label = "Healthy Targets" }],
-            ["...", "UnHealthyHostCount", ".", ".", { stat = "Average", label = "Unhealthy Targets" }]
+            ["AWS/ApplicationELB", "HealthyHostCount", "LoadBalancer", aws_lb.main.arn_suffix],
+            ["AWS/ApplicationELB", "UnHealthyHostCount", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Average"
@@ -285,8 +279,8 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "HTTPCode_Target_2XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "2XX" }],
-            ["AWS/ApplicationELB", "HTTPCode_Target_3XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "3XX" }]
+            ["AWS/ApplicationELB", "HTTPCode_Target_2XX_Count", "LoadBalancer", aws_lb.main.arn_suffix],
+            ["AWS/ApplicationELB", "HTTPCode_Target_3XX_Count", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Sum"
@@ -303,8 +297,8 @@ resource "aws_cloudwatch_dashboard" "application" {
         height = 6
         properties = {
           metrics = [
-            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "4XX" }],
-            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "5XX" }]
+            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix],
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", aws_lb.main.arn_suffix]
           ]
           period = 300
           stat   = "Sum"
