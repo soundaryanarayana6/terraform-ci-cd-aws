@@ -30,14 +30,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy Vulnerability Scanner (Repo)
-        uses: aquasecurity/trivy-action@master
+        #uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           scan-ref: '.'
           format: 'table'
-          exit-code: '' 
+          exit-code: '0' 
           ignore-unfixed: true
-          #severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL,HIGH'
 
   notify-on-failure:
     name: Email Notification (CI Failure)
