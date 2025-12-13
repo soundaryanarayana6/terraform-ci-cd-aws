@@ -14,10 +14,19 @@ import (
 )
 
 func main() {
+	// Set log output to stdout explicitly for CloudWatch
+	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Println("Starting application...")
 
-	r := gin.Default()
+	// Configure Gin to write to stdout
+	gin.DefaultWriter = os.Stdout
+	gin.DefaultErrorWriter = os.Stdout
+
+	// Use custom logger middleware instead of Default()
+	r := gin.New()
+	r.Use(gin.LoggerWithWriter(os.Stdout))
+	r.Use(gin.Recovery())
 
 	r.GET("/health", healthCheck)
 
@@ -61,8 +70,7 @@ func healthCheck(c *gin.Context) {
 	dbName := "mydb"
 	dbPort := "5432"
 
-	// Parse RDS endpoint - it may include port (e.g., "hostname:5432")
-	// We need to extract just the hostname
+
 	hostname := rdsEndpoint
 	if strings.Contains(rdsEndpoint, ":") {
 		parts := strings.Split(rdsEndpoint, ":")
@@ -76,8 +84,7 @@ func healthCheck(c *gin.Context) {
 
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?connect_timeout=10", 
 		username, password, hostname, dbPort, dbName)
-	
-	// Log connection string without password
+
 	safeURL := fmt.Sprintf("postgres://%s:****@%s:%s/%s?connect_timeout=10", 
 		username, hostname, dbPort, dbName)
 	log.Printf("Connecting to database: %s", safeURL)
