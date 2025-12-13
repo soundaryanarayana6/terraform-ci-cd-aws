@@ -1,13 +1,13 @@
 resource "aws_security_group" "rds_sg" {
   name        = "${var.env}-rds-sg"
-  description = "Allow PostgreSQL access from EC2"
+  description = "Allow PostgreSQL access from EKS nodes"
   vpc_id      = var.vpc_id
 
   ingress {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [var.ec2_sg_id]  # Only EC2 SG can access
+    security_groups = [var.eks_sg_id]  # Only EKS node SG can access
   }
 
   egress {
@@ -37,7 +37,9 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 }
 
 resource "aws_secretsmanager_secret" "db_password" {
-  name = "${var.env}-db-password"
+  name                    = "${var.env}-db-password-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  recovery_window_in_days = 0
+  force_overwrite_replica_secret = true
 }
 
 resource "aws_secretsmanager_secret_version" "db_password_version" {

@@ -5,13 +5,17 @@ terraform {
       version = "~> 5.0"
     }
   }
-  required_version = ">= 1.5.0"
-
-  backend "local" {
-    path = "terraform.tfstate"
-  }
+  required_version = ">= 1.0"
 }
 
 provider "aws" {
-  region = "us-east-1"  # Change to your desired region
+  region = var.aws_region
+  
+  default_tags {
+    tags = {
+      Project     = "OctabyteAssignment"
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+    }
+  }
 }

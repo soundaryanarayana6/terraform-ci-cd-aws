@@ -1,32 +1,30 @@
-# macOS
+# MacOS
 .DS_Store
 
 # Terraform
 .terraform/
-**/.terraform/*
+.terraform.lock.hcl
+*.tfstate
 *.tfstate.backup
-terraform.tfstate.backup
+*.tfvars
 *.tfvars.json
-crash.log
 override.tf
 override.tf.json
+.terraform.tfstate.lock.info
 
-# Sensitive keys
+# Go
+backend/backend
+# Unused scripts (if not deleted)
+*.sh
 
+# Sensitive
 *.key
+*.pem
 
-# IDEs and editors
+# IDEs
 .vscode/
 .idea/
 *.iml
 
-# OS
-Thumbs.db
-
 # Logs
 *.log
-
-# Node / Python common
-node_modules/
-__pycache__/
-*.py[cod]
