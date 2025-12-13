@@ -48,7 +48,7 @@ resource "aws_ecs_task_definition" "app" {
       { name = "DB_USERNAME", value = var.db_username },
       { name = "DB_PASSWORD", value = var.db_password },
       { name = "GIN_MODE", value = "debug" },
-      { name = "DB_NAME", value = "dbadmin" }
+      { name = "DB_NAME", value = "mydb" }
     ]
     logConfiguration = {
       logDriver = "awslogs"
