@@ -1,3 +1,6 @@
+
+data "aws_caller_identity" "current" {}
+
 resource "aws_lb" "main" {
   name               = "${var.environment}-alb"
   internal           = false
@@ -5,9 +8,60 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
 
+
+  access_logs {
+    bucket  = aws_s3_bucket.alb_logs.id
+    enabled = true
+    prefix  = "alb-access-logs"
+  }
+
   tags = {
     Name = "${var.environment}-alb"
   }
+}
+
+
+resource "aws_s3_bucket" "alb_logs" {
+  bucket = "${var.environment}-alb-access-logs-${data.aws_caller_identity.current.account_id}"
+
+  tags = {
+    Name = "${var.environment}-alb-access-logs"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "alb_logs" {
+  bucket = aws_s3_bucket.alb_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_logs.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "logdelivery.elasticloadbalancing.amazonaws.com"
+        }
+        Action   = "s3:PutObject"
+        Resource = "${aws_s3_bucket.alb_logs.arn}/alb-access-logs/*"
+      }
+    ]
+  })
 }
 
 resource "aws_lb_target_group" "app" {
@@ -15,7 +69,7 @@ resource "aws_lb_target_group" "app" {
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "ip" # Required for Fargate
+  target_type = "ip"  
 
   health_check {
     path                = "/health"
