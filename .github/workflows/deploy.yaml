@@ -1,0 +1,106 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: my-app-repo
+
+jobs:
+  build-and-push:
+    name: Build & Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: docker build -t ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }} .
+
+      - name: Run Trivy Vulnerability Scanner 
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
+
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init & Apply (Infrastructure)
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve -var="environment=staging" -var="db_password=${{ secrets.DB_PASSWORD }}"
+
+
+      - name: Deploy to ECS
+        working-directory: ./terraform
+        run: |
+          CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)
+          SERVICE_NAME=$(terraform output -raw ecs_service_name)
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production  
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init & Apply (Infrastructure)
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve -var="environment=prod" -var="db_password=${{ secrets.DB_PASSWORD }}"
+
+
+      - name: Deploy to Prod ECS
+        working-directory: ./terraform
+        run: |
+          CLUSTER_NAME=$(terraform output -raw ecs_cluster_name)
+          SERVICE_NAME=$(terraform output -raw ecs_service_name)
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment

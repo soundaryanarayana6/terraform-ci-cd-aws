@@ -1,13 +1,31 @@
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "environment" {
-  description = "Environment name (staging or prod)"
+  description = "Deployment environment (staging/prod)"
   type        = string
   default     = "staging"
 }
 
-variable "project" {
-  description = "Project name"
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
   type        = string
-  default     = "myapp"
+  default     = "10.0.0.0/16"
+}
+
+variable "public_subnet_cidrs" {
+  description = "CIDR blocks for public subnets"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+
+variable "private_subnet_cidrs" {
+  description = "CIDR blocks for private subnets"
+  type        = list(string)
+  default     = ["10.0.3.0/24", "10.0.4.0/24"]
 }
 
 variable "instance_type" {
@@ -16,43 +34,14 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for VPC"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "public_subnets" {
-  description = "Public subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
-
-variable "private_subnets" {
-  description = "Private subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24"]
-}
-
-variable "availability_zones" {
-  description = "Availability zones"
-  type        = list(string)
-  default     = ["us-east-1a", "us-east-1b"]
-}
-
 variable "db_password" {
-  description = "Database password for RDS"
+  description = "Password for the RDS database"
   type        = string
   sensitive   = true
 }
 
-variable "key_name" {
-  description = "Name of the AWS key pair to use for EC2 instances"
+variable "db_username" {
+  description = "Username for the RDS database"
   type        = string
-}
-
-variable "ami_id" {
-  description = "AMI ID for EC2 instances"
-  type        = string
-  default     = "ami-03f9680ef0c07a3d1"
+  default     = "dbadmin"
 }
