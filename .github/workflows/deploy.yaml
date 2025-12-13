@@ -6,48 +6,10 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: my-app-repo
 
 jobs:
-  build-and-push:
-    name: Build & Push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker Image
-        run: docker build -t ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }} .
-
-      - name: Run Trivy Vulnerability Scanner 
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'image'
-          image-ref: '${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-
-      - name: Push Docker Image
-        run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
-
-
   deploy-staging:
     name: Deploy to Staging
-    needs: build-and-push
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -67,6 +29,35 @@ jobs:
           terraform init
           terraform apply -auto-approve -var="environment=staging" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
+      - name: Get ECR URL (Staging)
+        id: get-ecr-staging
+        working-directory: ./terraform
+        run: |
+          ECR_URL=$(terraform output -raw ecr_repository_url)
+          echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build Docker Image
+        run: docker build -t ${{ steps.get-ecr-staging.outputs.ecr_url }}:${{ github.sha }} .
+
+      - name: Run Trivy Vulnerability Scanner 
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: '${{ steps.get-ecr-staging.outputs.ecr_url }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ steps.get-ecr-staging.outputs.ecr_url }}:${{ github.sha }}
+          docker tag ${{ steps.get-ecr-staging.outputs.ecr_url }}:${{ github.sha }} ${{ steps.get-ecr-staging.outputs.ecr_url }}:latest
+          docker push ${{ steps.get-ecr-staging.outputs.ecr_url }}:latest
 
       - name: Deploy to ECS
         working-directory: ./terraform
@@ -97,6 +88,35 @@ jobs:
           terraform init
           terraform apply -auto-approve -var="environment=prod" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
+      - name: Get ECR URL (Prod)
+        id: get-ecr-prod
+        working-directory: ./terraform
+        run: |
+          ECR_URL=$(terraform output -raw ecr_repository_url)
+          echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: docker build -t ${{ steps.get-ecr-prod.outputs.ecr_url }}:${{ github.sha }} .
+
+      - name: Run Trivy Vulnerability Scanner 
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: '${{ steps.get-ecr-prod.outputs.ecr_url }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ steps.get-ecr-prod.outputs.ecr_url }}:${{ github.sha }}
+          docker tag ${{ steps.get-ecr-prod.outputs.ecr_url }}:${{ github.sha }} ${{ steps.get-ecr-prod.outputs.ecr_url }}:latest
+          docker push ${{ steps.get-ecr-prod.outputs.ecr_url }}:latest
 
       - name: Deploy to Prod ECS
         working-directory: ./terraform
