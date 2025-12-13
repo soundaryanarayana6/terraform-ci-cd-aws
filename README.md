@@ -1,8 +1,8 @@
 # Octabyte Assignment Project
 
-This repo contains my submission for the Octabyte DevOps assignment.
+This repository contains my submission for the Octabyte DevOps assignment.
 
-The goal was to keep the stack simple but realistic: Terraform for infrastructure, ECS (Fargate) for compute, an ALB for ingress, RDS (PostgreSQL) for persistence, and GitHub Actions for CI/CD. CloudWatch is used for logs and dashboards.
+It provisions AWS infrastructure with Terraform and deploys a containerized backend on ECS (Fargate) behind an Application Load Balancer (ALB). CI/CD is implemented with GitHub Actions, and observability is handled with CloudWatch (logs + dashboards).
 
 ## Repository layout
 
@@ -10,13 +10,18 @@ The goal was to keep the stack simple but realistic: Terraform for infrastructur
 - `backend/` — backend service
 - `.github/workflows/` — CI and CD pipelines
 
+## Documentation
+
+- `APPROACH.md` — rationale and design choices (why ECS/Fargate, how CI/CD and monitoring were approached)
+- `CHALLENGES.md` — issues faced and how they were resolved
+
 ## How to set up and run the infrastructure
 
 ### Prerequisites
 
 - AWS CLI installed and configured (`aws configure`)
 - Terraform v1.14.1
-- An AWS account with necessary permissions to create required resources
+- An AWS account with permissions to create VPC, ECS, ALB, RDS, ECR, IAM, CloudWatch, and S3 resources
 
 ### Terraform inputs
 
@@ -31,7 +36,7 @@ Commonly used variables:
 
 ### Deploy from your machine
 
-From the repo root:
+From the repository root:
 
 ```bash
 cd terraform
@@ -95,6 +100,48 @@ Gmail example:
 - `SMTP_PORT`: `587`
 - `SMTP_USERNAME`: `yourname@gmail.com`
 - `SMTP_PASSWORD`: Google App Password (not your normal password)
+
+## Verification (required)
+
+The submission is expected to include:
+
+- evidence that the infrastructure is running
+- evidence of at least one successful CI/CD run
+
+### Infrastructure is running
+
+After `terraform apply` completes, verify the stack in AWS:
+
+1. **ECS service is healthy**
+   - AWS Console → ECS → Cluster → Service
+   - Desired tasks = Running tasks (typically 1)
+   - No tasks stuck in PENDING
+
+2. **ALB is reachable**
+   - AWS Console → EC2 → Load Balancers → copy the ALB DNS name
+   - Validate it with a browser or `curl`:
+     ```bash
+     curl -i http://<alb-dns-name>
+     ```
+
+3. **Target group health is green**
+   - EC2 → Target Groups → Targets tab
+   - Targets should be in `healthy`
+
+For submission, include at least one of the following:
+- a screenshot showing ECS service health and target group targets in `healthy`, or
+- the ALB DNS name plus a short note of the endpoint tested
+
+### CI/CD successful run
+
+Provide evidence from GitHub Actions:
+
+- GitHub → Actions → pick the latest run
+- Ensure the run is **green** (all jobs passed)
+- Include the run link in your submission/PR description:
+  - `https://github.com/<org>/<repo>/actions/runs/<run-id>`
+
+To validate email notifications (optional), temporarily force a CI failure (for example, add a step that runs `exit 1`), confirm the email is received, then revert the change.
 
 ## Architecture decisions (and why)
 
