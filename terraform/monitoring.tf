@@ -28,7 +28,7 @@ resource "aws_cloudwatch_log_group" "system_logs" {
   }
 }
 
-# Dashboard 1: Infrastructure Metrics (CPU, Memory, Disk)
+
 resource "aws_cloudwatch_dashboard" "infrastructure" {
   dashboard_name = "${var.environment}-infrastructure-dashboard"
 
@@ -238,7 +238,7 @@ resource "aws_cloudwatch_dashboard" "application" {
           title  = "ALB Error Rates"
         }
       },
-      # Latency Metrics
+
       {
         type   = "metric"
         x      = 0
@@ -276,24 +276,40 @@ resource "aws_cloudwatch_dashboard" "application" {
           title  = "Target Health Status"
         }
       },
-      # Request Count by Status Code
+
       {
         type   = "metric"
         x      = 0
         y      = 12
-        width  = 12
+        width  = 6
         height = 6
         properties = {
           metrics = [
             ["AWS/ApplicationELB", "HTTPCode_Target_2XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "2XX" }],
-            ["...", "HTTPCode_Target_3XX_Count", ".", ".", { stat = "Sum", label = "3XX" }],
-            ["...", "HTTPCode_Target_4XX_Count", ".", ".", { stat = "Sum", label = "4XX" }],
-            ["...", "HTTPCode_Target_5XX_Count", ".", ".", { stat = "Sum", label = "5XX" }]
+            ["AWS/ApplicationELB", "HTTPCode_Target_3XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "3XX" }]
           ]
           period = 300
           stat   = "Sum"
           region = var.aws_region
-          title  = "Request Count by Status Code"
+          title  = "2XX & 3XX Status Codes"
+        }
+      },
+      # 4XX and 5XX Status Codes
+      {
+        type   = "metric"
+        x      = 6
+        y      = 12
+        width  = 6
+        height = 6
+        properties = {
+          metrics = [
+            ["AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "4XX" }],
+            ["AWS/ApplicationELB", "HTTPCode_Target_5XX_Count", "LoadBalancer", aws_lb.main.arn_suffix, { stat = "Sum", label = "5XX" }]
+          ]
+          period = 300
+          stat   = "Sum"
+          region = var.aws_region
+          title  = "4XX & 5XX Status Codes"
         }
       },
       # Active Connection Count
