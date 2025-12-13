@@ -7,7 +7,6 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-# ECS Execution Role (for pulling images, logging)
 resource "aws_iam_role" "ecs_execution_role" {
   name = "${var.environment}-ecs-execution-role"
 
@@ -47,10 +46,9 @@ resource "aws_ecs_task_definition" "app" {
     environment = [
       { name = "RDS_ENDPOINT", value = aws_db_instance.postgres.endpoint },
       { name = "DB_USERNAME", value = var.db_username },
-      # DB_PASSWORD injected at runtime or fetched from Secrets Manager (if fully implemented). 
-      # Since we removed Secrets Manager code from App:
       { name = "DB_PASSWORD", value = var.db_password },
-      { name = "GIN_MODE", value = "debug" }
+      { name = "GIN_MODE", value = "debug" },
+      { name = "DB_NAME", value = "dbadmin" }
     ]
     logConfiguration = {
       logDriver = "awslogs"

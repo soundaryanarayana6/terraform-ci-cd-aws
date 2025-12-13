@@ -14,19 +14,22 @@ resource "aws_db_instance" "postgres" {
   instance_class    = "db.t3.micro"
   allocated_storage = 20
   storage_type      = "gp2"
-  
-  db_name  = "mydb"
+
   username = var.db_username
   password = var.db_password
-  
+
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.db.id]
-  
-  skip_final_snapshot     = true
-  publicly_accessible     = false
-  multi_az                = false # Set to true for prod usually, keeping false for task speed/cost
-  deletion_protection     = false # Set to true for prod
-  
+
+  skip_final_snapshot = true
+  publicly_accessible = false
+  multi_az            = false
+  deletion_protection = false
+
+  lifecycle {
+    ignore_changes = [db_name]
+  }
+
   tags = {
     Name = "${var.environment}-postgres"
   }

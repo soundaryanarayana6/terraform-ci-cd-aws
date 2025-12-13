@@ -67,7 +67,13 @@ func healthCheck(c *gin.Context) {
 	}
 	log.Println("DB_PASSWORD: [REDACTED]")
 
-	dbName := "mydb"
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "postgres" 
+		log.Println("DB_NAME not set, using default: postgres")
+	} else {
+		log.Printf("Using database: %s", dbName)
+	}
 	dbPort := "5432"
 
 
