@@ -200,6 +200,7 @@ The cost controls here are mostly “keep the footprint small” choices:
 - `db.t3.micro` for RDS for a low-cost database baseline
 - 7-day CloudWatch log retention to avoid unbounded log spend
 - ECS service `desired_count = 1` by default
+- **No NAT Gateway** — NAT Gateway costs ~$36/month minimum and is not included in AWS Free Tier. ECS tasks use public subnets with public IPs instead, which keeps the project within free tier limits for development/learning purposes. This means ECS tasks are exposed to the public internet (though protected by security groups and ALB), which is a trade-off accepted for cost optimization.
 
 ## Challenges and resolutions
 
