@@ -1,6 +1,6 @@
-# Octabyte Assignment Project
+# Terraform CI/CD AWS pipeline 
 
-This repository contains my submission for the Octabyte DevOps assignment.
+This repository contains my submission 
 
 It provisions AWS infrastructure with Terraform and deploys a containerized backend on ECS (Fargate) behind an Application Load Balancer (ALB). CI/CD is implemented with GitHub Actions, and observability is handled with CloudWatch (logs + dashboards).
 
@@ -158,7 +158,7 @@ To validate email notifications (optional), temporarily force a CI failure (for 
 - ALB is public-facing and receives HTTP traffic
 - The ECS service is registered behind the ALB target group
 
-Trade-off (kept intentionally simple for the assignment):
+Trade-off:
 
 - ECS tasks are running in **public subnets** with `assign_public_ip = true`. In a production setup, I’d normally move tasks to private subnets and control outbound traffic more strictly.
 
